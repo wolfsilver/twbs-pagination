@@ -123,6 +123,10 @@
             if (this.options.last) {
                 listItems.push(this.buildItem('last', this.options.totalPages));
             }
+            // Add "fastGo"
+            if (this.options.fastGo) {
+                listItems.push(this.buildFastGo(this.options.totalPages, pages.currentPage, listItems.pop()));
+            }
 
             return listItems;
         },
@@ -139,6 +143,22 @@
             $itemContainer.append($itemContent.attr('href', this.makeHref(page)).html(itemText));
 
             return $itemContainer;
+        },
+
+        buildFastGo: function (page, currentPage, itemContainer){
+            var $itemContent = $('<select></select>').addClass('form-control').css({
+                    display: 'inline-block',
+                    width: 'auto'
+                }),
+                itemText = null;
+            for(var i = 0; i < page; i++){
+                itemText = $('<option></option>').val(i + 1).html(i + 1 + '/' + page);
+                if (i + 1 == currentPage) {
+                    itemText.attr('selected', 'selected');
+                }
+                $itemContent.append(itemText);
+            }
+            return itemContainer.append(' <e style="padding-left: 35px;">' + this.options.fastGo + '</e> ').append($itemContent);
         },
 
         getPages: function (currentPage) {
@@ -214,10 +234,13 @@
                     $this.on('click', false);
                     return;
                 }
-                $this.click(function (evt) {
+                $this.on('click', 'a', function(evt) {
                     // Prevent click event if href is not set.
                     !_this.options.href && evt.preventDefault();
                     _this.show(parseInt($this.data('page')));
+                }).on('change', 'select', function(evt) {
+                    evt.preventDefault();
+                    _this.show(parseInt($(this).val()));
                 });
             });
         },
@@ -262,6 +285,7 @@
         prev: 'Previous',
         next: 'Next',
         last: 'Last',
+        fastGo: 'Go',
         loop: false,
         onPageClick: null,
         paginationClass: 'pagination',
